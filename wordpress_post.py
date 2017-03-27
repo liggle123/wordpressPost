@@ -3,6 +3,8 @@
 
 import sys
 import os
+import platform
+import subprocess
 from wordpress_xmlrpc import Client, WordPressPost
 from wordpress_xmlrpc.methods.posts import GetPosts, GetPost, NewPost, EditPost
 from wordpress_xmlrpc.methods.users import GetUserInfo
@@ -10,6 +12,33 @@ from wordpress_xmlrpc.methods import taxonomies
 import markdown
 
 os.chdir(sys.path[0])
+
+result_file = "result.txt" # 保存结果文件
+if os.path.exists(result_file):
+    os.remove(result_file)
+
+def result(textdetail):
+    with open(result_file, "a", encoding="utf-8") as f:
+        f.write(textdetail + "\n")
+def showresult():
+    if platform.system() == 'Windows':
+        subprocess.call(result_file, shell=True)  # 打开文件
+    elif platform.system() == 'Darwin':
+        subprocess.call('open ' + result_file, shell=True)  # 打开文件
+    else:
+        pass
+
+# article_handle("test.md")
+account_me = {
+    'xmlrpc_url': 'https://baldachin.me/xmlrpc.php',
+    'username': 'baldachin',
+    'password': 'HanSh19781014'
+}
+account_ali = {
+    'xmlrpc_url': 'http://ali.baldachin.cc/xmlrpc.php',
+    'username': 'baldachin',
+    'password': 'HanSh19781014'
+}
 
 
 def article_handle(filename):
@@ -59,25 +88,13 @@ def article_handle(filename):
         return None
     # print("%s\n%s" % (post_title, html_content))
 
-
-# article_handle("test.md")
-account_me = {
-    'xmlrpc_url': 'https://baldachin.me/xmlrpc.php',
-    'username': 'baldachin',
-    'password': 'HanSh19781014'
-}
-account_ali = {
-    'xmlrpc_url': 'http://ali.baldachin.cc/xmlrpc.php',
-    'username': 'baldachin',
-    'password': 'HanSh19781014'
-}
-
-
 def new_post(account, post):
     wp = Client(account['xmlrpc_url'], account['username'], account['password'])
     post.id = wp.call(NewPost(post))
     tmp = wp.call(GetPost(post.id))
-    print("GetPost: %s - %s - %s" % (tmp.id, tmp.title, tmp.link))
+    detail = "GetPost: %s - %s - %s" % (tmp.id, tmp.title, tmp.link)
+    print(detail)
+    result(detail)
     # wp.call(NewPost(post)) # 提交post内容
 
 
@@ -102,5 +119,5 @@ if __name__ == '__main__':
     if post:
         new_post(account_me, post)
         new_post(account_ali, post)
-
+    showresult()
     input("发布完成，按任意键关闭")
